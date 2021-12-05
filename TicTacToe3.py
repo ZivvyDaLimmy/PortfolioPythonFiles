@@ -29,7 +29,7 @@ def disableall(x=NORMAL,y=DISABLED):
                  ['-','-','-'],
                  ['-','-','-']]
         if whoStarts[0] == 'bot':
-            counter = 2
+            counter = 0
             bot()
         else:
             counter = 1
@@ -128,17 +128,14 @@ def bot():
         board = holderB[1]
         button[holderB[2]].config(image = photo2)
         disableall(DISABLED,NORMAL)
-        counter += 1
         myLabel.config(text = "Bot wins")
-        return check(board)
+        return None
     elif botIterations('o',b=board)[0] == True:
         #2nd priority: block any checks made
         holderB = botIterations('o',b=board)
         board = holderB[1]
         button[holderB[2]].config(image = photo2)
-        counter += 1
-        return check(board)
-    elif counter == 1 or counter == 2:
+    elif counter == 1 or counter == 0:
         #2.5th priority, if starting position
         if board[1][1] == '-':
             board[1][1] = 'x'
@@ -146,8 +143,6 @@ def bot():
         else:
             board[0][0] = 'x'
             button[0].config(image = photo2)
-        counter += 1
-        return check(board)
     else:
         #3rd priority, try to win by making its own move
         list2 = []
@@ -164,13 +159,14 @@ def bot():
             if list2[i][0][2] > threshold:
                 threshold = list2[i][0][2]
                 holdervar = i
-        counter += 1
         try:
             board = list2[holdervar][2]
             button[list2[holdervar][1]].config(image = photo2)
-            return check(board)
         except:
             pass
+    counter += 1
+    if counter == 9:
+        check2()
 
 #declaring starter variables
 
@@ -229,9 +225,8 @@ def main(first,typ):
         
     if first != "PLAYER":
         whoStarts[0] = 'bot'
-        counter = 2
+        counter = 0
         bot()
-        
 
 photop = PhotoImage(file = r"C:\Users\ZivLim\Desktop\Python Files\Images\box.png")
 photo1 = PhotoImage(file = r"C:\Users\ZivLim\Desktop\Python Files\Images\circle.png")
