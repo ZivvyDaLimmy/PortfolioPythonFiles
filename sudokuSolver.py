@@ -127,24 +127,21 @@ def on_press(key):
         prevButton.buttonCont.config(text = k, fg = "black") #changes text of button if number has been clicked
         sudokuBoard[prevButton.column][prevButton.row] = k
 
-def main():
-    root.title("Sudoku Solver") #puts the title on the window
+root.title("Sudoku Solver") #puts the title on the window
 
-    helv10 = tkFont.Font(family='Helvetica', size=10, weight=tkFont.BOLD) #intializes the font
-    cour14 = tkFont.Font(family='Courier', size=16, weight=tkFont.BOLD) #intializes the font
+helv10 = tkFont.Font(family='Helvetica', size=10, weight=tkFont.BOLD) #intializes the font
+cour14 = tkFont.Font(family='Courier', size=16, weight=tkFont.BOLD) #intializes the font
 
-    prevButton = None #keeps track of the previously clicked button 
-    grid = [gridButton(no) for no in range(81)] #intializes the buttons
+prevButton = None #keeps track of the previously clicked button 
+grid = [gridButton(no) for no in range(81)] #intializes the buttons
 
-    confButton = Button(root, text = "Click to solve", command = solveBoard, font = cour14, bg = "#b3b1b2")
-    confButton.grid(row = 9, column = 2, columnspan = 5) #Solve BTN
-    resButton = Button(root, text = "Reset", command = resetBoard, font = cour14, bg = "#b3b1b2")
-    resButton.grid(row = 10, column = 2, columnspan = 5) #Reset BTN
+confButton = Button(root, text = "Click to solve", command = solveBoard, font = cour14, bg = "#b3b1b2")
+confButton.grid(row = 9, column = 2, columnspan = 5) #Solve BTN
+resButton = Button(root, text = "Reset", command = resetBoard, font = cour14, bg = "#b3b1b2")
+resButton.grid(row = 10, column = 2, columnspan = 5) #Reset BTN
 
-    sudokuBoard = [['.'] * 9 for _ in range(9)]
+sudokuBoard = [['.'] * 9 for _ in range(9)]
 
-    listener = keyboard.Listener(on_press=on_press)
-    listener.start()
-    root.mainloop()
- 
-if __name__ == "__main__": main()
+listener = keyboard.Listener(on_press=on_press)
+listener.start()
+root.mainloop()
