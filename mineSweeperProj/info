@@ -1,0 +1,15 @@
+colours = ["black",
+           "deep sky blue",
+           "spring green",
+           "red",
+           "navy",
+           "red4",
+           "slate blue",
+           "black",
+           "gray50"]
+
+BOMBSNO = 10
+LENGTH = 10
+HEIGHT = 8
+BTNSIZE = 50
+
