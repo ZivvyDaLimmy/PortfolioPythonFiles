@@ -1,0 +1,122 @@
+import info
+import tkinter as tk
+from tkinter import messagebox
+import tkinter.font as font
+from itertools import product
+from random import randint
+import time
+
+root = tk.Tk()
+
+btnFont = font.Font(family='Helvetica', size = 28, weight='bold')
+txtFont = font.Font(family='Arial', size = 15)
+
+flagDisp = tk.Label(root, text = "Flags: ", width = 7, font = txtFont).place(x = 25, y = 425)
+flagLeftDisp = tk.Label(root, text = str(info.BOMBSNO), width = 2, font = txtFont)
+flagLeftDisp.place(x = 95, y = 425)
+
+flagsLeft = info.BOMBSNO
+isFirstClick = True
+tilesRemoved = -1
+startTime = time.perf_counter()
+
+class gridCell():
+    def __init__(self, id, isBomb = False):
+        self.id = id
+        self.isBomb = isBomb
+        self.y, self.x = id // info.LENGTH, id % info.LENGTH
+        self.bombsNearby = 0
+        self.bgColor = ["SpringGreen2", "bisque2"] if (self.x + self.y) % 2 else ["SpringGreen3", "bisque3"]
+        self.isActive = self.flagOn = False
+
+        self.lbl = tk.Label(root, text = "", width = 2, justify = "center", font = btnFont, bg = self.bgColor[0])
+        self.lbl.place(x = info.BTNSIZE * self.x, y = info.BTNSIZE * self.y )
+        self.lbl.bind("<Button-1>", lambda _: self.clickOn(False, _))
+        self.lbl.bind("<Button-3>", self.flag)
+    def flag(self, _):
+        global flagsLeft, flagLeftDisp
+        if self.isActive or not (flagsLeft > 0 or self.flagOn): return
+        
+        self.lbl.configure(text = "" if self.flagOn else "|>") 
+        flagsLeft -= (-1 if self.flagOn else 1)
+        self.flagOn = not self.flagOn
+        flagLeftDisp.configure(text = str(flagsLeft))
+    def clickOn(self, forced, _):
+        global flagsLeft, isFirstClick, tilesRemoved, startTime
+        if not forced and self.flagOn: return
+        
+        tilesRemoved += 1
+        self.lbl.configure(bg = self.bgColor[1])
+        
+        if isFirstClick: firstClickTileFind(self.y, self.x)
+        elif not self.bombsNearby and not forced:
+            tilesRemoved -= 1
+            DFS(self.y, self.x)
+
+        if self.flagOn:
+            self.flag(None)
+            self.flagOn = False
+        self.isActive = True
+
+        if self.isBomb:
+            resetGame(["Game Over!", f"You Clicked On A Bomb"])
+        elif self.bombsNearby:
+            self.lbl.configure(text = str(self.bombsNearby), foreground = info.colours[self.bombsNearby])
+        if tilesRemoved == 80 - info.BOMBSNO:
+            resetGame(["You Win", f"All Bombs are removed in {round(time.perf_counter() - startTime, 1)} second(s)"])
+        
+def firstClickTileFind(currY, currX):
+    global allButtons, isFirstClick
+    isFirstClick = False
+    isValidDist = lambda y, x: abs(currY - y) < 2 or abs(currX - x) < 2
+    for _ in range(info.BOMBSNO): #10 bombs
+        bombY, bombX = currY, currX
+        while isValidDist(bombY, bombX) or allButtons[bombY][bombX].isBomb:
+            bombY, bombX = randint(0, info.HEIGHT - 1), randint(0, info.LENGTH - 1)
+        
+        allButtons[bombY][bombX].isBomb = True
+        for yA, xA in product(range(-1, 2), range(-1, 2)):
+            if -1 < yA + bombY < info.HEIGHT and -1 < xA + bombX < info.LENGTH:
+                allButtons[yA + bombY][xA + bombX].bombsNearby += 1
+    DFS(currY, currX)
+
+def resetGame(msg):
+    global flagsLeft, isFirstClick, allButtons, flagLeftDisp, tilesRemoved, startTime
+    
+    for exposeFlags in [False, True]:
+        if msg[0] != "Game Over!": break
+        for id in range(80):
+            currButton = allButtons[id // 10][id % 10]
+            if currButton.isBomb and not exposeFlags:
+                currButton.lbl.configure(text = "X", background = "red")
+                currButton.lbl.update()
+                time.sleep(0.2)
+            if currButton.flagOn and not currButton.isBomb and exposeFlags:
+                currButton.lbl.configure(text = "/", background = "blue")
+    messagebox.showinfo(msg[0], msg[1])
+    
+    flagsLeft = info.BOMBSNO
+    isFirstClick = True
+    tilesRemoved = -1
+    startTime = time.perf_counter()
+    flagLeftDisp.configure(text = str(info.BOMBSNO))
+    allButtons = [[gridCell(i + j * info.LENGTH) for i in range(info.LENGTH)] for j in range(info.HEIGHT)]
+
+def DFS(currY, currX):
+    global allButtons, tilesRemoved
+    if allButtons[currY][currX].isActive: return
+    
+    allButtons[currY][currX].isActive = True
+    allButtons[currY][currX].clickOn(True, None)
+    
+    if allButtons[currY][currX].bombsNearby: return
+
+    for addY, addX in product(range(-1, 2), range(-1, 2)):
+        if (0 <= currY + addY < info.HEIGHT and 0 <= currX + addX < info.LENGTH): DFS(currY + addY, currX + addX)
+
+allButtons = [[gridCell(i + j * info.LENGTH) for i in range(info.LENGTH)] for j in range(info.HEIGHT)]
+
+
+root.minsize(500, 475)
+root.title("MineSweeper")
+root.mainloop()
